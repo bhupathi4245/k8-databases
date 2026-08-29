@@ -1,24 +1,24 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
   labels:
-    component: catalogue
+    component: shipping
     project: roboshop
     tier: app
 data:
-  MONGO: "true"
-  MONGO_URL: "mongodb://mongodb:27017/catalogue"
+  CART_ENDPOINT: "cart:8080"
+  DB_HOST: "mysql"
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
   # deployment labels
   labels:
-    component: catalogue
+    component: shipping
     project: roboshop
     tier: app
 spec:
@@ -26,43 +26,43 @@ spec:
   # These are the labels replica set use to create pod replicas, this should match pod labels
   selector:
     matchLabels:
-      component: catalogue
+      component: shipping
       project: roboshop
       tier: app
   # This is pod definition
   template:
     metadata:
       labels:
-        component: catalogue
+        component: shipping
         project: roboshop
         tier: app
     spec:
       containers:
-      - name: catalogue
-        image: joindevops/catalogue:v1
+      - name: shipping
+        image: joindevops/shipping:v1
         resources:
           requests:
-            memory: "128Mi"
-            cpu: "50m"
-          limits:
             memory: "256Mi"
             cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
         envFrom:
         - configMapRef:
-            name: catalogue
+            name: shipping
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
   labels:
-    component: catalogue
+    component: shipping
     project: roboshop
     tier: app
 spec:
   selector:
-    component: catalogue
+    component: shipping
     project: roboshop
     tier: app
   ports:
@@ -73,13 +73,13 @@ spec:
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: catalogue
+  name: shipping
   namespace: roboshop
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: catalogue
+    name: shipping
   minReplicas: 1
   maxReplicas: 10
   metrics:
